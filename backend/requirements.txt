@@ -1,0 +1,11 @@
+Flask
+Flask-Cors
+psycopg2-binary
+google-generativeai
+python-dotenv
+SQLAlchemy
+Flask-SQLAlchemy
+Flask-Migrate
+Flask-Login
+werkzeug
+gunicorn
