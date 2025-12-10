@@ -56,7 +56,7 @@ def create_resource():
 @login_required
 def delete_resource(id):
     resource = Resource.query.get_or_404(id)
-    if resource.teacher_id != current_user.id:
+    if resource.teacher_id != current_user.id and current_user.role != 'admin':
         return jsonify({'error': 'Unauthorized'}), 403
         
     db.session.delete(resource)
