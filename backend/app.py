@@ -1,4 +1,5 @@
 import os
+from dotenv import load_dotenv
 from flask import Flask
 from extensions import db, migrate, cors, login_manager
 from routes.auth import auth_bp
@@ -10,6 +11,9 @@ from routes.resources import resources_bp
 from routes.users import users_bp
 from models import User
 
+# Load environment variables
+load_dotenv()
+
 def create_app():
     app = Flask(__name__)
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev_key')
@@ -19,7 +23,7 @@ def create_app():
     # Initialize extensions
     db.init_app(app)
     migrate.init_app(app, db)
-    cors.init_app(app, resources={r"/api/*": {"origins": "http://localhost:3000"}}, supports_credentials=True)
+    cors.init_app(app, resources={r"/api/*": {"origins": ["http://localhost:3000", "http://localhost:8080"]}}, supports_credentials=True)
     login_manager.init_app(app)
     login_manager.login_view = 'auth.login'
 
