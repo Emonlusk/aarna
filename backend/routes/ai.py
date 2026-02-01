@@ -1,51 +1,39 @@
 from flask import Blueprint, request, jsonify
 import os
-import requests
 import json
+from google import genai
 
 ai_bp = Blueprint('ai', __name__)
 
-# Configure Gemini API Key
-GOOGLE_API_KEY = os.environ.get('GOOGLE_API_KEY')
-GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
+# Initialize Gemini client
+# The client automatically reads from GEMINI_API_KEY or GOOGLE_API_KEY environment variable
+def get_genai_client():
+    """Get or create the Gemini AI client"""
+    api_key = os.environ.get('GEMINI_API_KEY') or os.environ.get('GOOGLE_API_KEY')
+    if not api_key:
+        return None
+    return genai.Client(api_key=api_key)
 
 def call_gemini_api(prompt_text):
-    """Helper function to call Gemini API via REST"""
-    if not GOOGLE_API_KEY:
-        raise Exception("Google API Key not configured")
-
-    headers = {
-        "Content-Type": "application/json"
-    }
+    """Helper function to call Gemini API using google-genai SDK"""
+    client = get_genai_client()
+    if not client:
+        raise Exception("Google API Key not configured. Set GEMINI_API_KEY or GOOGLE_API_KEY environment variable.")
     
-    # Gemini REST API payload structure
-    payload = {
-        "contents": [{
-            "parts": [{"text": prompt_text}]
-        }]
-    }
-    
-    response = requests.post(
-        f"{GEMINI_API_URL}?key={GOOGLE_API_KEY}",
-        headers=headers,
-        json=payload
-    )
-    
-    if response.status_code != 200:
-        print(f"Gemini API Error ({response.status_code}): {response.text}") # Log error for debugging
-        raise Exception(f"Gemini API Error: {response.text}")
-        
-    data = response.json()
     try:
-        # Extract text from response
-        return data['candidates'][0]['content']['parts'][0]['text']
-    except (KeyError, IndexError):
-        raise Exception("Invalid response format from Gemini API")
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt_text
+        )
+        return response.text
+    except Exception as e:
+        print(f"Gemini API Error: {str(e)}")
+        raise Exception(f"Gemini API Error: {str(e)}")
 
 @ai_bp.route('/chat', methods=['POST'])
 def chat():
-    if not GOOGLE_API_KEY:
-        return jsonify({'error': 'AI service not configured'}), 503
+    if not get_genai_client():
+        return jsonify({'error': 'AI service not configured. Set GEMINI_API_KEY environment variable.'}), 503
         
     data = request.json
     message = data.get('message')
@@ -70,8 +58,8 @@ def chat():
 
 @ai_bp.route('/grade', methods=['POST'])
 def grade():
-    if not GOOGLE_API_KEY:
-        return jsonify({'error': 'AI service not configured'}), 503
+    if not get_genai_client():
+        return jsonify({'error': 'AI service not configured. Set GEMINI_API_KEY environment variable.'}), 503
         
     data = request.json
     content = data.get('content')

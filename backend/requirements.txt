@@ -1,7 +1,6 @@
 Flask
 Flask-Cors
 psycopg2-binary
-requests
 python-dotenv
 SQLAlchemy
 Flask-SQLAlchemy
@@ -9,3 +8,4 @@ Flask-Migrate
 Flask-Login
 werkzeug
 gunicorn
+google-genai

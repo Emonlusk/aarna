@@ -72,3 +72,15 @@ logs/
 
 # OS
 Thumbs.db
+# Docker volumes
+postgres_data/
+certbot/
+
+# Local development databases
+backend/instance/
+
+# Keep .env.example files
+!.env.example
+!.env.docker.example
+!backend/.env.example
+!frontend/.env.example
